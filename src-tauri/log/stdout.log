@@ -1,0 +1,2 @@
+2022-11-06T13:12:19.283553800+03:00 ERROR panic - thread 'main' panicked at 'env_logger::init_from_env should not be called after logger initialized: SetLoggerError(())': C:\Users\kirsr\.cargo\registry\src\github.com-1ecc6299db9ec823\env_logger-0.9.1\src\lib.rs:1222
+2022-11-06T13:12:20.986002600+03:00 ERROR panic - thread 'main' panicked at 'env_logger::init_from_env should not be called after logger initialized: SetLoggerError(())': C:\Users\kirsr\.cargo\registry\src\github.com-1ecc6299db9ec823\env_logger-0.9.1\src\lib.rs:1222
