@@ -6,3 +6,4 @@ import { readDir, FileEntry, readTextFile } from "@tauri-apps/api/fs"
 
 // // html min-width, min-height not working on mac, below works for all
 // view.windowMinSize = (scaleIt(560), scaleIt(300));
+
