@@ -1,11 +1,18 @@
+import { ColorModeScript } from '@chakra-ui/react';
 import React from "react"
 import ReactDOM from "react-dom"
-// import App from "./App"
+import App from "./app"
 
-// TODO: непонятно как это дебажить, в консоле ничего не меняется по обращению к build/index.html(если к нему обращаться без новой логики в index.tsx, то все работает), я не тот файл пытаюсь получить из rust?
+{/* <script type="text/tiscript">
+include "common.tis";
+include "msgbox.tis";
+include "ab.tis";
+include "index.tis";
+</script> */}
+
 ReactDOM.render(
   <React.StrictMode>
-    <h1>Hello, world!</h1>
+    <App />
   </React.StrictMode>,
   document.getElementById("root")
 )

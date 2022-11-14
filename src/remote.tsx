@@ -1,7 +1,7 @@
 import { invoke } from "@tauri-apps/api"
 // var cursor_img = $(img#cursor);
-const is_file_transfer = await invoke<boolean>("is_file_transfer");
-const is_port_forward = await invoke<boolean>("is_port_forward");
+export const is_file_transfer = async() => await invoke<boolean>("is_file_transfer");
+export const is_port_forward = async() => await invoke<boolean>("is_port_forward");
 var input_blocked = false;
 var display_width = 0;
 var display_height = 0;

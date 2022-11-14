@@ -20,15 +20,15 @@ export const translate_text = async (text: string) => {
     return text;
 }
 
-// let msgboxTimerFunc = function() {}
+let msgboxTimerFunc = function() {}
 
 // Просто закрывает 
-// export const closeMsgbox = () => {
-//     // self.timer(0, msgboxTimerFunc);
-//     // $(#msgbox).content(<span />);
-//     setInterval(msgboxTimerFunc, 0);
-
-// }
+export const closeMsgbox = () => {
+    // self.timer(0, msgboxTimerFunc);
+    setInterval(msgboxTimerFunc, 0);
+    // TODO:
+    // $(#msgbox).content(<span />);
+}
 
 
 // export class MsgboxComponent extends React.Component {

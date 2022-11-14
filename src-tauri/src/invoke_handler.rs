@@ -32,12 +32,35 @@ fn get_os() -> String{
     return "OSX".to_string();
 }
 
+#[tauri::command(async)]
+fn centerize(window: tauri::Window, mut w: u32, mut h: u32) {    
+    let current_monitor = window.current_monitor().unwrap().unwrap();
+    let size = current_monitor.size();
+    let position = current_monitor.position();
+    
+    let sw = size.width;
+    let sh = size.height;
+    let sx = position.x;
+    let sy = position.y;
+    if (w > sw) {
+        w = sw;
+    }
+    if (h > sh) {
+        h = sh;
+    }
+    let x = (sx + sw as i32 - w as i32) / 2;
+    let y = (sy + sh as i32 - h as i32) / 2;
+    window.set_position(tauri::Position::Physical(tauri::PhysicalPosition::new(x, y))).unwrap();
+    window.set_size(tauri::Size::Physical(tauri::PhysicalSize { width: w, height: h })).unwrap();
+}
+
 pub fn invoke_handler(builder: Builder<Wry>) -> Builder<Wry>{
     builder.invoke_handler(tauri::generate_handler![
         exit,
         // 
         // connectionManager,
         // native_remote,
+        centerize,
         get_os,
         ])
     .invoke_handler(tauri::generate_handler![
@@ -125,9 +148,6 @@ pub fn invoke_handler(builder: Builder<Wry>) -> Builder<Wry>{
         ui_interface::default_video_save_directory,
         ])
     .invoke_handler(tauri::generate_handler![
-        // TODO: 
-        // надо переписать на эвентах т.к. к self обратиться черз макрос не получится
-        // либо можно помучать состояния, но такой код не будет работать с другими языками или например на бэке
         tauri_session_handler::get_audit_server,
         tauri_session_handler::send_note,
         tauri_session_handler::get_session_id,
