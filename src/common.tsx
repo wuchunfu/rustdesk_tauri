@@ -147,7 +147,7 @@ const msgbox = async (type: string, title: string, content: string, link="", cal
     var remember = false;
     try { remember = await invoke<boolean>("get_remember");} catch(e) {}
     var auto_login = false;
-    try { auto_login = await invoke<string>("get_option", {"key": "auto-login"}) != ''; } catch(e) {}
+    try { auto_login = await invoke<string>("get_option", {key: "auto-login"}) != ''; } catch(e) {}
     width += is_xfce ? 50 : 0;
     height += is_xfce ? 50 : 0;
 
@@ -157,7 +157,7 @@ const msgbox = async (type: string, title: string, content: string, link="", cal
                 view.close();
                 return;
             }
-            await invoke("login", {"password": res.password, "remember": res.remember}); 
+            await invoke("login", {password: res.password, remember: res.remember}); 
             if (!(await is_port_forward())) {
               // Specially handling file transfer for no permission hanging issue (including 60ms
               // timer in setPermission.
@@ -315,8 +315,8 @@ export const httpRequest = async (url: string, type: string, params: any, _onSuc
     if (type != "#post") {
         console.log("!!!    only post ok    !!!");
     }
-    const strParams = JSON.stringify(params);
-    await invoke("post_request", {url, strParams, headers});
+    const body = JSON.stringify(params);
+    await invoke("post_request", {url: url, body: body, header: headers});
     async function check_status() {
         var status = await invoke<string>("get_async_job_status");
         if (status == " ") setInterval(() => check_status(), 100);

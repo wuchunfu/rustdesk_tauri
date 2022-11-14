@@ -11,6 +11,13 @@ import { readDir, FileEntry, readTextFile } from "@tauri-apps/api/fs"
 // // html min-width, min-height not working on mac, below works for all
 // view.windowMinSize = (scaleIt(560), scaleIt(300));
 
+{/* <script type="text/tiscript">, 
+include "common.tis"; migration 80% complete
+include "msgbox.tis"; migration 10% complete
+include "ab.tis"; migration 10% complete
+include "index.tis"; migration 0% complete
+</script> */}
+
 const App = () => {
     return (
       <BrowserRouter>

@@ -21,8 +21,6 @@ export const translate_text = async (text: string) => {
 }
 
 let msgboxTimerFunc = function() {}
-
-// Просто закрывает 
 export const closeMsgbox = () => {
     // self.timer(0, msgboxTimerFunc);
     setInterval(msgboxTimerFunc, 0);
@@ -32,22 +30,25 @@ export const closeMsgbox = () => {
 
 
 // export class MsgboxComponent extends React.Component {
-//     new(params: any) {
-//         this.width = params.width;
-//         this.height = params.height;
-//         this.type = params.type;
-//         this.title = params.title;
-//         this.content = params.content;
-//         this.link = params.link;
-//         this.remember = params.remember;
-//         this.callback = params.callback;
-//         this.hasRetry = params.hasRetry;
-//         this.auto_login = params.auto_login;
-//         this.contentStyle = params.contentStyle;
-//         try { this.content = translate_text(this.content); } catch (e) {}
+//     constructor(props: any) {
+//         super(props);
+//         this.state = {
+//             width: props.width,
+//             height: props.height,
+//             type: props.type,
+//             title: props.title,
+//             content: props.content,
+//             link: props.link,
+//             remember: props.remember,
+//             callback: props.callback,
+//             hasRetry: props.hasRetry,
+//             auto_login: props.auto_login,
+//             contentStyle: props.contentStyle,
+//             content: translate_text(props.content)
+//         };
 //     }
 
-//     getIcon(color) {
+//     getIcon(color: any) {
 //         if (this.type == "input-password") {
 //             return <svg viewBox="0 0 505 505"><circle cx="252.5" cy="252.5" r="252.5" fill={color}/><path d="M271.9 246.1c29.2 17.5 67.6 13.6 92.7-11.5 29.7-29.7 29.7-77.8 0-107.4s-77.8-29.7-107.4 0c-25.1 25.1-29 63.5-11.5 92.7L118.1 347.4l26.2 26.2 26.4 26.4 10.6-10.6-10.1-10.1 9.7-9.7 10.1 10.1 10.6-10.6-10.1-10 9.7-9.7 10.1 10.1 10.6-10.6-26.4-26.3 76.4-76.5z" fill="#fff"/><circle cx="337.4" cy="154.4" r="17.7" fill={color}/></svg>;
 //         }
