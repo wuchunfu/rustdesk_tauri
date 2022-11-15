@@ -9,12 +9,11 @@ import { closeMsgbox } from './msgbox';
 //         [number, number, number]
 //       >("get_monitor_size")
 const view = appWindow;
-let OS = await invoke<string>("get_os");
-
-let is_osx = OS == "OSX";
-let is_win = OS == "Windows";
-let is_linux = OS == "Linux";
-let is_xfce = false;
+export const OS = await invoke<string>("get_os");
+export const is_osx = OS == "OSX";
+export const is_win = OS == "Windows";
+export const is_linux = OS == "Linux";
+export let is_xfce = false;
 
 try { is_xfce = await invoke<boolean>("is_xfce"); } catch(e) {}
 
@@ -313,7 +312,7 @@ class PasswordComponent extends React.Component {
 export const httpRequest = async (url: string, type: string, params: any, _onSuccess: any, _onError: any, headers="") => {
     // TODO: define #post literal
     if (type != "#post") {
-        console.log("!!!    only post ok    !!!");
+        console.log("Error. Only post ok.");
     }
     const body = JSON.stringify(params);
     await invoke("post_request", {url: url, body: body, header: headers});

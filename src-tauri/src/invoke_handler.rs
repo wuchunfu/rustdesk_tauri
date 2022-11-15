@@ -69,7 +69,7 @@ pub fn invoke_handler(builder: Builder<Wry>) -> Builder<Wry>{
         ui_interface::get_api_server, // get api server address 
         ui_interface::is_xfce, // get xfce UNIX settings
         ui_interface::using_public_server, // is server public
-        ui_interface::get_id, // get session id
+        ui_interface::get_id, // get config id
         ui_interface::temporary_password, // get temporary password
         ui_interface::update_temporary_password, // update temporary password
         ui_interface::permanent_password, // get permanent password

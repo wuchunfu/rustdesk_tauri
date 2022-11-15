@@ -1,19 +1,24 @@
+import { invoke } from '@tauri-apps/api';
+import { appWindow, PhysicalSize } from '@tauri-apps/api/window'
+import React from 'react';
+import { handler_msgbox, is_win, is_xfce, OS, scaleIt } from "./common";
+import { translate } from './msgbox';
+
 // if (is_osx) view.windowBlurbehind = #light;
-// stdout.println("current platform:", OS);
-// stdout.println("is_xfce: ", is_xfce);
+console.log("current platform:", OS);
+console.log("is_xfce: ", is_xfce);
 
-// // html min-width, min-height not working on mac, below works for all
-// view.windowMinSize = (scaleIt(560), scaleIt(300));
-
-// var app;
-// var tmp = handler.get_connect_status();
-// var connect_status = tmp[0];
-// var service_stopped = handler.get_option("stop-service") == "Y";
-// var rendezvous_service_stopped = false;
-// var using_public_server = handler.using_public_server();
-// var software_update_url = "";
-// var key_confirmed = tmp[1];
-// var system_error = "";
+// html min-width, min-height not working on mac, below works for all
+appWindow.setMinSize(new PhysicalSize(await scaleIt(560), await scaleIt(300)))
+let app: any;
+const tmp = await invoke<[number, boolean, number, string]>("get_connect_status");
+const connect_status = tmp[0];
+const service_stopped = await invoke<string>("get_option", {key: "stop-service"}) == "Y";
+const rendezvous_service_stopped = false;
+const using_public_server = await invoke<boolean>("using_public_server");
+let software_update_url = "";
+const key_confirmed = tmp[1];
+let system_error = "";
 
 // var svg_menu = <svg #menu viewBox="0 0 512 512">
 // 	<circle cx="256" cy="256" r="64"/>
@@ -22,153 +27,171 @@
 // </svg>;
 // var svg_refresh_password = <svg #refresh-password xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 2v6h6M2.66 15.57a10 10 0 1 0 .57-8.38"/></svg>;
 
-// var my_id = "";
-// function get_id() {
-//   my_id = handler.get_id();
-//   return my_id;
-// }
+let my_id = "";
+export const get_id = async () => {
+  my_id = await invoke("get_id"); //TODO: Maube a bug here, becouse {Rustdesk "remote::get_id"} = {Rustdesk_tauri "remote::get_session_id"}
+  return my_id;
+}
 
-// class ConnectStatus: Reactor.Component {
-//     function render() {
-//         return
-//             <div .connect-status>
-//                 <span class={"connect-status-icon connect-status" + (service_stopped ? 0 : connect_status)} />
-//                 {this.getConnectStatusStr()}
-//                 {service_stopped ? <span .link #start-service>{translate('Start Service')}</span> : ""}
-//             </div>;
-//     }
+class ConnectStatus extends React.Component {
+    render() {
+        return
+            //TODO: 
+            // <div .connect-status>
+            //     <span class={"connect-status-icon connect-status" + (service_stopped ? 0 : connect_status)} />
+            //     {this.getConnectStatusStr()}
+            //     {service_stopped ? <span .link #start-service>{translate('Start Service')}</span> : ""}
+            // </div>;
+    }
 
-//     function getConnectStatusStr() {
-//         if (service_stopped) {
-//             return translate("Service is not running");
-//         } else if (connect_status == -1) {
-//             return translate('not_ready_status');
-//         } else if (connect_status == 0) {
-//             return translate('connecting_status');
-//         }
-//         if (!handler.using_public_server()) return translate('Ready');
-//         return <span>{translate("Ready")}, <span .link #setup-server>{translate("setup_server_tip")}</span></span>;
-//     }
+    // TODO:
+    // getConnectStatusStr() {
+    //     if (service_stopped) {
+    //         return translate("Service is not running");
+    //     } else if (connect_status == -1) {
+    //         return translate('not_ready_status');
+    //     } else if (connect_status == 0) {
+    //         return translate('connecting_status');
+    //     }
+    //     if (!(await invoke('using_public_server'))) return translate('Ready');
+    //     return
+    //     TODO: 
+    //     // <span>{translate("Ready")}, <span .link #setup-server>{translate("setup_server_tip")}</span></span>;
+    // }
 
-//     event click $(#start-service) () {
-//         handler.set_option("stop-service", "");
-//     }
+    // TODO:
+    // event click $(#start-service) () {
+    //     handler.set_option("stop-service", "");
+    // }
 
-//     event click $(#setup-server) () {
-//         handler.open_url("https://rustdesk.com/blog/id-relay-set/");
-//     }
-// }
+    // event click $(#setup-server) () {
+    //     handler.open_url("https://rustdesk.com/blog/id-relay-set/");
+    // }
+}
 
-// function createNewConnect(id, type) {
-//     id = id.replace(/\s/g, "");
-//     app.remote_id.value = formatId(id);
-//     if (!id) return;
-//     if (id == my_id) {
-//         msgbox("custom-error", "Error", "You cannot connect to your own computer");
-//         return;
-//     }
-//     handler.set_remote_id(id);
-//     handler.new_remote(id, type);
-// }
+export const createNewConnect = async(id: string, type: string) => {
+    id = id.replace(/\s/g, "");
+    app.remote_id.value = formatId(id);
+    if (!id) return;
+    if (id == my_id) {
+        handler_msgbox("custom-error", "Error", "You cannot connect to your own computer");
+        return;
+    }
+    await invoke("set_remote_id", {id: id});
+    await invoke("new_remote", {id: id, remote_type: type});
+}
 
-// class ShareRdp: Reactor.Component {
-//     function render() {
-//         var rdp_shared_string = translate("Enable RDP session sharing");
-//         var cls = handler.is_share_rdp()  ? "selected" : "line-through";
-//         return <li class={cls}><span>{svg_checkmark}</span>{rdp_shared_string}</li>;
-//     }
+class ShareRdp extends React.Component {
+    // TODO:
+    // render() {
+    //     var rdp_shared_string = translate("Enable RDP session sharing");
+    //     var cls = await invoke("is_share_rdp")  ? "selected" : "line-through";
+        
+    //     // TODO:
+    //     // return <li class={cls}><span>{svg_checkmark}</span>{rdp_shared_string}</li>;
+    // }
     
-//     function onClick() {
-//         handler.set_share_rdp(!handler.is_share_rdp());
-//         this.update();
-//     }
-// }
+    // TODO:
+    // onClick() {
+    //     await invoke("set_share_rdp", {_enable: !(await invoke("is_share_rdp"))});
+    //     TODO:
+    //     // this.update();
+    // }
+}
 
-// var direct_server;
-// class DirectServer: Reactor.Component {
-//     function this() {
-//         direct_server = this;
-//     }
+let direct_server;
+class DirectServer extends React.Component {
+    constructor(props: any) {
+        super(props);
+        direct_server = this;
+    }
 
-//     function render() {
-//         var text = translate("Enable Direct IP Access");
-//         var enabled = handler.get_option("direct-server") == "Y";
-//         var cls = enabled ? "selected" : "line-through";
-//         return <li class={cls}><span>{svg_checkmark}</span>{text}{enabled && <EditDirectAccessPort />}</li>;
-//     }
+    // TODO:
+    // render() {
+    //     const text = translate("Enable Direct IP Access");
+    //     const enabled = await invoke("get_option", {key: "direct-server"}) == "Y";
+    //     const cls = enabled ? "selected" : "line-through";
+    //     // TODO:
+    //     // return <li class={cls}><span>{svg_checkmark}</span>{text}{enabled && <EditDirectAccessPort />}</li>;
+    // }
     
-//     function onClick() {
-//         if (is_edit_rdp_port) {
-//             is_edit_rdp_port = false;
-//             return;
-//         }
-//         handler.set_option("direct-server", handler.get_option("direct-server") == "Y" ? "" : "Y");
-//         this.update();
-//     }
-// }
+    // TODO:
+    // function onClick() {
+    //     if (is_edit_rdp_port) {
+    //         is_edit_rdp_port = false;
+    //         return;
+    //     }
+    //     handler.set_option("direct-server", handler.get_option("direct-server") == "Y" ? "" : "Y");
+    //     this.update();
+    // }
+}
 
-// var myIdMenu;
-// var audioInputMenu;
-// class AudioInputs: Reactor.Component {
-//     function this() {
-//         audioInputMenu = this;
-//     }
+let myIdMenu;
+let audioInputMenu;
+class AudioInputs extends React.Component {
+    constructor(props: any) {
+        super(props);
+        audioInputMenu = this;
+    }
 
-//     function render() {
-//         if (!this.show) return <li />;
-//         var inputs = handler.get_sound_inputs();
-//         if (is_win) inputs = ["System Sound"].concat(inputs);
-//         if (!inputs.length) return <li style="display:hidden" />;
-//         var me = this;
-//         self.timer(1ms, function() { me.toggleMenuState() });
-//         return <li>{translate('Audio Input')}
-//             <menu #audio-input key={inputs.length}>
-//                 <li #enable-audio><span>{svg_checkmark}</span>{translate("Mute")}</li>
-//                 <div .separator />
-//                 {inputs.map(function(name) {
-//                 return <li id={name}><span>{svg_checkmark}</span>{translate(name)}</li>;
-//                 })}
-//             </menu>
-//         </li>;
-//     }
+    // TODO:
+    // render() {
+    //     if (!this.show) return <li />;
+    //     var inputs = handler.get_sound_inputs();
+    //     if (is_win) inputs = ["System Sound"].concat(inputs);
+    //     if (!inputs.length) return <li style="display:hidden" />;
+    //     var me = this;
+    //     self.timer(1ms, function() { me.toggleMenuState() });
+    //     return <li>{translate('Audio Input')}
+    //         <menu #audio-input key={inputs.length}>
+    //             <li #enable-audio><span>{svg_checkmark}</span>{translate("Mute")}</li>
+    //             <div .separator />
+    //             {inputs.map(function(name) {
+    //             return <li id={name}><span>{svg_checkmark}</span>{translate(name)}</li>;
+    //             })}
+    //         </menu>
+    //     </li>;
+    // }
 
-//     function get_default() {
-//         if (is_win) return "System Sound";
-//         return "";
-//     }
+    get_default() {
+        if (is_win) return "System Sound";
+        return "";
+    }
 
-//     function get_value() {
-//         return handler.get_option("audio-input") || this.get_default();
-//     }
+    async get_value() {
+        return await invoke("get_option", {key: "audio-input"}) || this.get_default();
+    }
 
-//     function toggleMenuState() {
-//         var el = this.$(li#enable-audio);
-//         var enabled = handler.get_option(el.id) != "N";
-//         el.attributes.toggleClass("selected", !enabled);
-//         var v = this.get_value();
-//         for (var el in this.$$(menu#audio-input>li)) {
-//             if (el.id == 'enable-audio') continue;
-//             var selected = el.id == v;
-//             el.attributes.toggleClass("selected", selected);
-//         }
-//     }
+    // TODO:
+    // toggleMenuState() {
+    //     var el = this.$(li#enable-audio);
+    //     var enabled = handler.get_option(el.id) != "N";
+    //     el.attributes.toggleClass("selected", !enabled);
+    //     var v = this.get_value();
+    //     for (var el in this.$$(menu#audio-input>li)) {
+    //         if (el.id == 'enable-audio') continue;
+    //         var selected = el.id == v;
+    //         el.attributes.toggleClass("selected", selected);
+    //     }
+    // }
 
-//     event click $(menu#audio-input>li) (_, me) {
-//         var v = me.id;
-//         if (v == 'enable-audio') {
-//             handler.set_option(v, handler.get_option(v) != 'N' ? 'N' : '');
-//         } else {
-//           if (v == this.get_value()) return;
-//           if (v == this.get_default()) v = "";
-//           handler.set_option("audio-input", v);
-//         }
-//         this.toggleMenuState();
-//     }
-// };
+    // TODO:
+    // event click $(menu#audio-input>li) (_, me) {
+    //     var v = me.id;
+    //     if (v == 'enable-audio') {
+    //         handler.set_option(v, handler.get_option(v) != 'N' ? 'N' : '');
+    //     } else {
+    //       if (v == this.get_value()) return;
+    //       if (v == this.get_default()) v = "";
+    //       handler.set_option("audio-input", v);
+    //     }
+    //     this.toggleMenuState();
+    // }
+};
 
-// class Languages: Reactor.Component {
-//     function render() {
-//         var langs = JSON.parse(handler.get_langs());
+// class Languages extends React.Component {
+//     render() {
+//         var langs = JSON.parse(await invoke("get_langs"));
 //         var me = this;
 //         self.timer(1ms, function() { me.toggleMenuState() });
 //         return <li>{translate('Language')}
@@ -534,66 +557,67 @@
 //       });
 // }
 
-// class App: Reactor.Component
-// {
-//     function this() {
-//         app = this;
-//     }
+class App extends React.Component
+{
+    this() {
+        app = this;
+    }
 
-//     function render() {
-//         var is_can_screen_recording = handler.is_can_screen_recording(false);
-//         return
-//             <div .app>
-//                     <div .left-pane>
-//                     <div>
-//                         <div .title>{translate('Your Desktop')}</div>
-//                         <div .lighter-text>{translate('desk_tip')}</div>
-//                         <div .your-desktop>
-//                             <MyIdMenu />
-//                             {key_confirmed ? <input type="text" readonly value={formatId(get_id())}/> : translate("Generating ...")}
-//                         </div>
-//                         <PasswordArea />
-//                     </div>
-//                     {!is_win || handler.is_installed() ? "": <InstallMe />}
-//                     {software_update_url ? <UpdateMe /> : ""}
-//                     {is_win && handler.is_installed() && !software_update_url && handler.is_installed_lower_version() ? <UpgradeMe /> : ""}
-//                     {is_can_screen_recording ? "": <CanScreenRecording />}
-//                     {is_can_screen_recording && !handler.is_process_trusted(false) ? <TrustMe /> : ""}
-//                     {!service_stopped && is_can_screen_recording && handler.is_process_trusted(false) && handler.is_installed() && !handler.is_installed_daemon(false) ? <InstallDaemon /> : ""}
-//                     {system_error ? <SystemError /> : ""}
-//                     {!system_error && handler.is_login_wayland() && !handler.current_is_wayland() ? <FixWayland /> : ""}
-//                     {!system_error && handler.current_is_wayland() ? <ModifyDefaultLogin /> : ""}
-//                 </div>
-//                 <div .right-pane>
-//                     <div .right-content>
-//                         <div .card-connect>
-//                             <div .title>{translate('Control Remote Desktop')}</div>
-//                             <ID @{this.remote_id} />
-//                             <div .right-buttons>
-//                                 <button .button .outline #file-transfer>{translate('Transfer File')}</button>
-//                                 <button .button #connect>{translate('Connect')}</button>
-//                             </div>
-//                         </div>
-//                         <MultipleSessions @{this.multipleSessions} />
-//                     </div>
-//                     <ConnectStatus @{this.connect_status} />
-//                 </div>
-//                 <div #overlay style="position: absolute;size:*;background:black;opacity:0.5;display:none" />
-//             </div>;
-//     }
+    // TODO:
+    // render() {
+    //     var is_can_screen_recording = handler.is_can_screen_recording(false);
+    //     return
+    //         <div .app>
+    //                 <div .left-pane>
+    //                 <div>
+    //                     <div .title>{translate('Your Desktop')}</div>
+    //                     <div .lighter-text>{translate('desk_tip')}</div>
+    //                     <div .your-desktop>
+    //                         <MyIdMenu />
+    //                         {key_confirmed ? <input type="text" readonly value={formatId(get_id())}/> : translate("Generating ...")}
+    //                     </div>
+    //                     <PasswordArea />
+    //                 </div>
+    //                 {!is_win || handler.is_installed() ? "": <InstallMe />}
+    //                 {software_update_url ? <UpdateMe /> : ""}
+    //                 {is_win && handler.is_installed() && !software_update_url && handler.is_installed_lower_version() ? <UpgradeMe /> : ""}
+    //                 {is_can_screen_recording ? "": <CanScreenRecording />}
+    //                 {is_can_screen_recording && !handler.is_process_trusted(false) ? <TrustMe /> : ""}
+    //                 {!service_stopped && is_can_screen_recording && handler.is_process_trusted(false) && handler.is_installed() && !handler.is_installed_daemon(false) ? <InstallDaemon /> : ""}
+    //                 {system_error ? <SystemError /> : ""}
+    //                 {!system_error && handler.is_login_wayland() && !handler.current_is_wayland() ? <FixWayland /> : ""}
+    //                 {!system_error && handler.current_is_wayland() ? <ModifyDefaultLogin /> : ""}
+    //             </div>
+    //             <div .right-pane>
+    //                 <div .right-content>
+    //                     <div .card-connect>
+    //                         <div .title>{translate('Control Remote Desktop')}</div>
+    //                         <ID @{this.remote_id} />
+    //                         <div .right-buttons>
+    //                             <button .button .outline #file-transfer>{translate('Transfer File')}</button>
+    //                             <button .button #connect>{translate('Connect')}</button>
+    //                         </div>
+    //                     </div>
+    //                     <MultipleSessions @{this.multipleSessions} />
+    //                 </div>
+    //                 <ConnectStatus @{this.connect_status} />
+    //             </div>
+    //             <div #overlay style="position: absolute;size:*;background:black;opacity:0.5;display:none" />
+    //         </div>;
+    // }
 
-//     event click $(button#connect) {
-//         this.newRemote("connect");
-//     }
+    // event click $(button#connect) {
+    //     this.newRemote("connect");
+    // }
 
-//     event click $(button#file-transfer) {
-//         this.newRemote("file-transfer");
-//     }
+    // event click $(button#file-transfer) {
+    //     this.newRemote("file-transfer");
+    // }
 
-//     function newRemote(type) {
-//         createNewConnect(this.remote_id.value, type);
-//     }
-// }
+    // newRemote(type: string) {
+    //     createNewConnect(this.remote_id.value, type);
+    // }
+}
 
 // class InstallMe: Reactor.Component {
 //     function render() {
@@ -1007,20 +1031,20 @@
 //     }
 // }
 
-// var reg = /^\d+$/;
-// function formatId(id) {
-//     id = id.replace(/\s/g, "");
-//     if (reg.test(id) && id.length > 3) {
-//         var n = id.length;
-//         var a = n % 3 || 3;
-//         var new_id = id.substr(0, a);
-//         for (var i = a; i < n; i += 3) {
-//             new_id += " " + id.substr(i, 3);
-//         }
-//         return new_id;
-//     }
-//     return id;
-// }
+var reg = /^\d+$/;
+function formatId(id: string) {
+    id = id.replace(/\s/g, "");
+    if (reg.test(id) && id.length > 3) {
+        var n = id.length;
+        var a = n % 3 || 3;
+        var new_id = id.substr(0, a);
+        for (var i = a; i < n; i += 3) {
+            new_id += " " + id.substr(i, 3);
+        }
+        return new_id;
+    }
+    return id;
+}
 
 // event keydown (evt) {
 //     if (view.focus && view.focus.id != 'remote_id') {

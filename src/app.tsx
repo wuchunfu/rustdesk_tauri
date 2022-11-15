@@ -15,7 +15,7 @@ import { readDir, FileEntry, readTextFile } from "@tauri-apps/api/fs"
 include "common.tis"; migration 80% complete
 include "msgbox.tis"; migration 10% complete
 include "ab.tis"; migration 10% complete
-include "index.tis"; migration 0% complete
+include "index.tis"; migration 10% complete
 </script> */}
 
 const App = () => {
