@@ -939,7 +939,7 @@ impl Connection {
         return Config::get_option(enable_prefix_option).is_empty();
     }
 
-    async fn on_message(&mut self, msg: Message) -> bool {
+    async fn on_message(&mut self, msg: Message) -> bool { 
         if let Some(message::Union::LoginRequest(lr)) = msg.union {
             self.lr = lr.clone();
             if let Some(o) = lr.option.as_ref() {

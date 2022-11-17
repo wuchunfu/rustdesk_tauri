@@ -60,6 +60,8 @@ struct IpcTaskRunner<T: InvokeUiCM> {
     conn_id: i32,
     #[cfg(windows)]
     file_transfer_enabled: bool,
+
+    app: tauri::AppHandle,   
 }
 
 lazy_static::lazy_static! {
@@ -74,7 +76,7 @@ pub struct ConnectionManager<T: InvokeUiCM> {
 }
 
 pub trait InvokeUiCM: Send + Clone + 'static + Sized {
-    fn add_connection(&self, client: &Client);
+    fn add_connection(&self, app: &tauri::AppHandle, client: &Client);
 
     fn remove_connection(&self, id: i32, close: bool);
 
@@ -102,6 +104,7 @@ impl<T: InvokeUiCM> DerefMut for ConnectionManager<T> {
 impl<T: InvokeUiCM> ConnectionManager<T> {
     fn add_connection(
         &self,
+        app: &tauri::AppHandle,
         id: i32,
         is_file_transfer: bool,
         port_forward: String,
@@ -137,7 +140,7 @@ impl<T: InvokeUiCM> ConnectionManager<T> {
             .unwrap()
             .retain(|_, c| !(c.disconnected && c.peer_id == client.peer_id));
         CLIENTS.write().unwrap().insert(id, client.clone());
-        self.ui_handler.add_connection(&client);
+        self.ui_handler.add_connection(app, &client);
     }
 
     fn remove_connection(&self, id: i32, close: bool) {
@@ -172,6 +175,7 @@ impl<T: InvokeUiCM> ConnectionManager<T> {
 }
 
 #[inline]
+#[tauri::command(async)]
 pub fn check_click_time(id: i32) {
     if let Some(client) = CLIENTS.read().unwrap().get(&id) {
         allow_err!(client.tx.send(Data::ClickTime(0)));
@@ -179,11 +183,13 @@ pub fn check_click_time(id: i32) {
 }
 
 #[inline]
+#[tauri::command(async)]
 pub fn get_click_time() -> i64 {
     CLICK_TIME.load(Ordering::SeqCst)
 }
 
 #[inline]
+#[tauri::command(async)]
 pub fn authorize(id: i32) {
     if let Some(client) = CLIENTS.write().unwrap().get_mut(&id) {
         client.authorized = true;
@@ -192,6 +198,7 @@ pub fn authorize(id: i32) {
 }
 
 #[inline]
+#[tauri::command(async)]
 pub fn close(id: i32) {
     if let Some(client) = CLIENTS.read().unwrap().get(&id) {
         allow_err!(client.tx.send(Data::Close));
@@ -213,6 +220,7 @@ pub fn send_chat(id: i32, text: String) {
 }
 
 #[inline]
+#[tauri::command(async)]
 pub fn switch_permission(id: i32, name: String, enabled: bool) {
     if let Some(client) = CLIENTS.read().unwrap().get(&id) {
         allow_err!(client.tx.send(Data::SwitchPermission { name, enabled }));
@@ -287,7 +295,6 @@ impl<T: InvokeUiCM> IpcTaskRunner<T> {
         {
             (_tx_clip, rx_clip) = unbounded_channel::<i32>();
         }
-
         loop {
             tokio::select! {
                 res = self.stream.next() => {
@@ -300,7 +307,7 @@ impl<T: InvokeUiCM> IpcTaskRunner<T> {
                             match data {
                                 Data::Login{id, is_file_transfer, port_forward, peer_id, name, authorized, keyboard, clipboard, audio, file, file_transfer_enabled: _file_transfer_enabled, restart, recording} => {
                                     log::debug!("conn_id: {}", id);
-                                    self.cm.add_connection(id, is_file_transfer, port_forward, peer_id, name, authorized, keyboard, clipboard, audio, file, restart, recording, self.tx.clone());
+                                    self.cm.add_connection(&self.app, id, is_file_transfer, port_forward, peer_id, name, authorized, keyboard, clipboard, audio, file, restart, recording, self.tx.clone());
                                     self.conn_id = id;
                                     #[cfg(windows)]
                                     {
@@ -381,7 +388,7 @@ impl<T: InvokeUiCM> IpcTaskRunner<T> {
         }
     }
 
-    async fn ipc_task(stream: Connection, cm: ConnectionManager<T>) {
+    async fn ipc_task(app: tauri::AppHandle, stream: Connection, cm: ConnectionManager<T>) {
         log::debug!("ipc task begin");
         let (tx, rx) = mpsc::unbounded_channel::<Data>();
         let mut task_runner = Self {
@@ -393,6 +400,7 @@ impl<T: InvokeUiCM> IpcTaskRunner<T> {
             conn_id: 0,
             #[cfg(windows)]
             file_transfer_enabled: false,
+            app: app.clone(),
         };
 
         task_runner.run().await;
@@ -410,7 +418,7 @@ impl<T: InvokeUiCM> IpcTaskRunner<T> {
 
 #[cfg(not(any(target_os = "android", target_os = "ios")))]
 #[tokio::main(flavor = "current_thread")]
-pub async fn start_ipc<T: InvokeUiCM>(cm: ConnectionManager<T>) {
+pub async fn start_ipc<T: InvokeUiCM>(app: tauri::AppHandle, cm: ConnectionManager<T>) {
     #[cfg(windows)]
     std::thread::spawn(move || {
         log::info!("try create privacy mode window");
@@ -425,7 +433,11 @@ pub async fn start_ipc<T: InvokeUiCM>(cm: ConnectionManager<T>) {
         }
         allow_err!(crate::ui_tauri::win_privacy::start());
     });
-
+    
+    // DEBUG //
+    let (tx, rx) = mpsc::unbounded_channel::<Data>();
+    cm.add_connection(&app, 1, false, "port_forward".to_string(), "peer_id".to_string(), "name".to_string(), true, true, true, true, false, true, true, tx.clone());
+    // DEBUG //
     match new_listener("_cm").await {
         Ok(mut incoming) => {
             while let Some(result) = incoming.next().await {
@@ -433,6 +445,7 @@ pub async fn start_ipc<T: InvokeUiCM>(cm: ConnectionManager<T>) {
                     Ok(stream) => {
                         log::debug!("Got new connection");
                         tokio::spawn(IpcTaskRunner::<T>::ipc_task(
+                            app.clone(),
                             Connection::new(stream),
                             cm.clone(),
                         ));

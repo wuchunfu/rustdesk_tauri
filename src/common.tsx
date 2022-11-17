@@ -201,7 +201,7 @@ const handler_msgbox_retry = async (type: string, title: string, text: string, l
     }
 }
 
-const retryConnect = async (cancelTimer=false) => {
+export const retryConnect = async (cancelTimer=false) => {
     if (cancelTimer) {
         // self.timer(0, retryConnect);
         setInterval(

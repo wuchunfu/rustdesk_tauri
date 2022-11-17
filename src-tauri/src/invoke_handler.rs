@@ -1,9 +1,8 @@
 mod tauri_session_handler;
-use std::sync::Mutex;
 use hbb_common::config;
-use tauri::{GlobalShortcutManager, Manager, Builder, Wry};
+use tauri::{Builder, Wry};
 
-use crate::{ui_interface};
+use crate::{ui_interface, ui_cm_interface};
 
 #[tauri::command(async)]
 fn exit(app: tauri::AppHandle) {
@@ -42,16 +41,32 @@ fn centerize(window: tauri::Window, mut w: u32, mut h: u32) {
     let sh = size.height;
     let sx = position.x;
     let sy = position.y;
-    if (w > sw) {
+    if w > sw {
         w = sw;
     }
-    if (h > sh) {
+    if h > sh {
         h = sh;
     }
     let x = (sx + sw as i32 - w as i32) / 2;
     let y = (sy + sh as i32 - h as i32) / 2;
     window.set_position(tauri::Position::Physical(tauri::PhysicalPosition::new(x, y))).unwrap();
     window.set_size(tauri::Size::Physical(tauri::PhysicalSize { width: w, height: h })).unwrap();
+}
+
+
+#[tauri::command(async)]
+fn remove_disconnected_connection(id: i32) {
+    ui_cm_interface::remove(id);
+}
+
+#[tauri::command(async)]
+fn quit() {
+    crate::platform::quit_gui();
+}
+
+#[tauri::command(async)]
+fn send_msg(id: i32, text: String) {
+    ui_cm_interface::send_chat(id, text);
 }
 
 pub fn invoke_handler(builder: Builder<Wry>) -> Builder<Wry>{
@@ -62,8 +77,6 @@ pub fn invoke_handler(builder: Builder<Wry>) -> Builder<Wry>{
         // native_remote,
         centerize,
         get_os,
-        ])
-    .invoke_handler(tauri::generate_handler![
         // UI for index.html and install.html
         ui_interface::t, // translate text for react component
         ui_interface::get_api_server, // get api server address 
@@ -146,8 +159,6 @@ pub fn invoke_handler(builder: Builder<Wry>) -> Builder<Wry>{
         ui_interface::has_hwcodec,
         ui_interface::get_langs,
         ui_interface::default_video_save_directory,
-        ])
-    .invoke_handler(tauri::generate_handler![
         tauri_session_handler::get_audit_server,
         tauri_session_handler::send_note,
         tauri_session_handler::get_session_id,
@@ -214,5 +225,13 @@ pub fn invoke_handler(builder: Builder<Wry>) -> Builder<Wry>{
         tauri_session_handler::supported_hwcodec,
         tauri_session_handler::change_prefer_codec,
         tauri_session_handler::restart_remote_device,
+        ui_cm_interface::check_click_time,
+        ui_cm_interface::get_click_time,
+        ui_cm_interface::close,
+        remove_disconnected_connection,
+        quit,
+        ui_cm_interface::authorize,
+        ui_cm_interface::switch_permission,
+        send_msg,
         ])
 }

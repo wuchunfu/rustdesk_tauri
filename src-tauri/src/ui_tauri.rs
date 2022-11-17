@@ -22,7 +22,6 @@ use tauri::Manager;
 pub type Childs = Arc<Mutex<(bool, HashMap<(String, String), Child>)>>;
 
 pub mod cm;
-pub mod cm_tis;
 #[cfg(feature = "inline")]
 pub mod inline;
 #[cfg(target_os = "macos")]
@@ -57,10 +56,12 @@ pub fn start(app: &tauri::AppHandle, args: &mut [String]) {
         // TODO:
         //  crate::common::check_software_update();
         page = "index.html";
+        app.manage(Mutex::new(cm::TauriConnectionManager::new(app.clone()))); //TODO: Move app to static
+
     } else if args[0] == "--install" {
         page = "install.html";
     } else if args[0] == "--cm" {
-        app.manage(Mutex::new(cm::SciterConnectionManager::new()));
+        app.manage(Mutex::new(cm::TauriConnectionManager::new(app.clone()))); //TODO: Move app to static
         handler.push("connection-manager".to_string());
         page = "cm.html";
     } else if (args[0] == "--connect"
