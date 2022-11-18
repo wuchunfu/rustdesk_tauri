@@ -8,19 +8,6 @@ let body: any;
 let connections: any = [];
 let show_chat = false;
 
-import { emit, listen } from '@tauri-apps/api/event'
-
-// TODO: Test with tauri windows dev tools
-const unlisten = await listen('addConnection', (event: any) => {
-    console.log(event.payload);
-    addConnection(event.payload.id, event.payload.is_file_transfer, event.payload.port_forward, event.payload.peer_id, event.payload.name, event.payload.authorized, event.payload.keyboard, event.payload.clipboard, event.payload.audio, event.payload.file, event.payload.restart, event.payload.recording);
-    // event.event is the event name (useful if you want to use a single callback fn for multiple event types)
-    // event.payload is the payload object
-})
-// TODO: removeConnection
-// TODO: new_message
-
-
 
 class Body extends React.Component {
     cur(){
@@ -330,7 +317,7 @@ class Header extends React.Component {
 //     }
 // }
 
-const addConnection = (id: number, is_file_transfer: boolean, port_forward: string, peer_id: string, name: string, authorized: boolean, keyboard: boolean, clipboard: boolean, audio: boolean, file: boolean, restart: boolean, recording: boolean) => {
+export const addConnection = (id: number, is_file_transfer: boolean, port_forward: string, peer_id: string, name: string, authorized: boolean, keyboard: boolean, clipboard: boolean, audio: boolean, file: boolean, restart: boolean, recording: boolean) => {
     console.log("new connection #" + id + ": " + peer_id);
     let conn: any;
     connections.map(function(c: any) {

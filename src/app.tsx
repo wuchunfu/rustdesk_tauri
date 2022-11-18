@@ -2,7 +2,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom"
 import { ChakraProvider } from "@chakra-ui/provider"
 import theme from "./theme/index"
 import Form from './pages/Form';
-import { readDir, FileEntry, readTextFile } from "@tauri-apps/api/fs"
 
 // if (is_osx) view.windowBlurbehind = #light;
 // stdout.println("current platform:", OS);
@@ -17,6 +16,7 @@ include "msgbox.tis"; migration 10% complete
 include "ab.tis"; migration 10% complete
 include "index.tis"; migration 10% complete
 </script> */}
+
 
 const App = () => {
     return (

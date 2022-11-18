@@ -1,11 +1,26 @@
+use hbb_common::tokio::sync::mpsc;
+
 use crate::{
-    ui_tauri::{remote::{TauriSession, PortForwards}}, 
+    ui_tauri::{remote::{TauriSession, PortForwards}, cm::TauriHandler}, 
     ui_session_interface::{InvokeUiSession, Session}, 
     client::{Interface, file_trait::FileManager}, 
+    ui_cm_interface::ConnectionManager, ipc::Data, 
     
 };
 
 use std::{sync::Mutex};
+
+#[tauri::command]
+pub fn test_tauri(app: tauri::AppHandle,){
+    
+    // DEBUG //        
+    let new_cm = ConnectionManager {
+        ui_handler: TauriHandler::default(),
+    };
+    let (tx, rx) = mpsc::unbounded_channel::<Data>();
+    new_cm.add_connection(&app, 1, false, "port_forward".to_string(), "peer_id".to_string(), "name".to_string(), true, true, true, true, false, true, true, tx.clone());
+    // DEBUG //
+}
 
 #[tauri::command(async)]
 pub fn get_audit_server(tauri_session: tauri::State<Mutex<TauriSession>>) -> String {

@@ -102,7 +102,7 @@ impl<T: InvokeUiCM> DerefMut for ConnectionManager<T> {
 }
 
 impl<T: InvokeUiCM> ConnectionManager<T> {
-    fn add_connection(
+    pub fn add_connection(
         &self,
         app: &tauri::AppHandle,
         id: i32,
@@ -433,11 +433,6 @@ pub async fn start_ipc<T: InvokeUiCM>(app: tauri::AppHandle, cm: ConnectionManag
         }
         allow_err!(crate::ui_tauri::win_privacy::start());
     });
-    
-    // DEBUG //
-    let (tx, rx) = mpsc::unbounded_channel::<Data>();
-    cm.add_connection(&app, 1, false, "port_forward".to_string(), "peer_id".to_string(), "name".to_string(), true, true, true, true, false, true, true, tx.clone());
-    // DEBUG //
     match new_listener("_cm").await {
         Ok(mut incoming) => {
             while let Some(result) = incoming.next().await {

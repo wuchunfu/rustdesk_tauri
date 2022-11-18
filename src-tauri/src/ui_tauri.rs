@@ -1,23 +1,16 @@
 
 use hbb_common::{
-    allow_err,
-    config::{self, Config, PeerConfig, RENDEZVOUS_PORT, RENDEZVOUS_TIMEOUT},
-    futures::future::join_all,
     log,
-    protobuf::Message as _,
-    rendezvous_proto::*,
-    tcp::FramedStream,
-    tokio::{self, sync::mpsc},
 };
 
 use std::{
     collections::HashMap,
-    iter::FromIterator,
     process::Child,
     sync::{Arc, Mutex},
 };
 
 use tauri::Manager;
+
 
 pub type Childs = Arc<Mutex<(bool, HashMap<(String, String), Child>)>>;
 
@@ -56,8 +49,6 @@ pub fn start(app: &tauri::AppHandle, args: &mut [String]) {
         // TODO:
         //  crate::common::check_software_update();
         page = "index.html";
-        app.manage(Mutex::new(cm::TauriConnectionManager::new(app.clone()))); //TODO: Move app to static
-
     } else if args[0] == "--install" {
         page = "install.html";
     } else if args[0] == "--cm" {

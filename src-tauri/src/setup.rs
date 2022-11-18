@@ -5,9 +5,6 @@ use crate::{
     core_main,
     ui_tauri,
 };
-use hbb_common::log;
-use tauri::{GlobalShortcutManager, Manager};
-use std::sync::Mutex;
 
 pub fn setup(app: &tauri::AppHandle) {
     

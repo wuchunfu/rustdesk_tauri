@@ -6,7 +6,17 @@ import {
   FormLabel,
   Input,
 } from '@chakra-ui/react';
-import react, { useState } from 'react';
+
+import React, { useState, useEffect } from "react";
+
+
+import { listen } from '@tauri-apps/api/event'
+import { addConnection } from "../cm";
+import { invoke } from "@tauri-apps/api";
+
+
+// TODO: removeConnection
+// TODO: new_message
 
 function Form() {
   const [firstname, setFirstname] = useState('');
@@ -19,7 +29,29 @@ function Form() {
     alert(`Hello ${firstname} ${lastname}`)
     setFirstname("")
     setLastname("")
+    console.log("test_tauri")
   }
+
+  useEffect(() => {
+    console.log("useEffect")
+    if (listen) {
+      // TODO: Test with tauri windows dev tools
+      listen('addConnection', (event) => {
+        console.log(event.payload);
+        addConnection(event.payload.id, event.payload.is_file_transfer, event.payload.port_forward, event.payload.peer_id, event.payload.name, event.payload.authorized, event.payload.keyboard, event.payload.clipboard, event.payload.audio, event.payload.file, event.payload.restart, event.payload.recording);
+        // event.event is the event name (useful if you want to use a single callback fn for multiple event types)
+        // event.payload is the payload object
+      })
+    }
+  });
+
+  async function search() {
+    // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
+
+    const temp = (await invoke("test_tauri")
+    .then(()=>console.log("test_tauri")));
+  }
+
 
 //   const isError = input === '';
 
